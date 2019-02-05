@@ -1,7 +1,7 @@
 // global variabling the pins
 int button1 = 2;
 int button2 = 3;
-int switch1 = 2;
+int switch1 = 4;
 int led1 = 9;
 int led2 = 10;
 int led3 = 11;
