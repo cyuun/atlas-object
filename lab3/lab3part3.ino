@@ -2,7 +2,7 @@
 
 //speaker is in pin 5
 const int slider = A0;
-const int spiner = A1;
+const int spinner = A1;
 
 Volume vol;
 int pitch = 0;
@@ -21,8 +21,8 @@ void loop() {
   // put your main code here, to run repeatedly:
  
   //reading in the analog inputs, I already know theyre potentiometers, so I know the range 
-  volume = map(analogRead(A0), 0, 1023, 0, 255);
-  pitch = map(analogRead(A1), 0, 1023, 120, 3500);
+  volume = map(analogRead(slider), 0, 1023, 0, 255);
+  pitch = map(analogRead(spinner), 0, 1023, 120, 3500);
   
   //just checking things
   //Serial.println(vol);
