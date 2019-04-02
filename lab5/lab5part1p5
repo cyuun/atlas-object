@@ -50,30 +50,7 @@ function draw() {
   fill('white');
   ellipse(width, height, xpos, ypos);
   
-  //im including my sending of data in the draw function, cause I want it to be happening continuously
-  sendData();
   
-  
-}
-
-//this is my custom function for sending data
-//in general, it finds the percent of the canvas that is white vs the percent that is black, and sends it to the arduino to be a PWM output for an LED.
-function sendData() {
-  loadPixels();
-  //the canvas is 400x300, making 120 000 total pixels in the canvas
-  //since p5 encodes for RGBA, there are 4 entries in the array for each pixel; total pixel array size = 480 000
-  //but we don't need to sum accross all the entries, we know that for white, R,G, and B are all 255, and for black they are all 0, so we only need to check the R value of each pixel
-  //furthermore to save computation time, we can just sum every tenth pixel on the canvas, since the final sum will be mapped down to 0-255 for PWM output anyways the difference made by summing every tenth pixel won't be a big deal
-  //so we only need 480 000/40 = 12 000 indexes to sum over
-  var sum = 0;
-  for (var i = 0; i < 12000; i++) {
-    var index = i*40; //here is where we make up for only having 30 000 indexes
-    if (pixels[index]) {
-      sum++;
-    }
-  }
-  //console.log(sum);
-  serial.write(sum);
 }
 
 //all my callback functions are down here:
