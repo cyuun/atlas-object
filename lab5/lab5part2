@@ -1,0 +1,118 @@
+/*
+This P5 sketch is a template for getting started with Serial Communication. 
+The SerialEvent callback is where incoming data is received 
+
+
+By Arielle Hein, adapted from ITP Phys Comp Serial Labs
+Edited March 12 2019
+
+*/
+
+
+var serial; //variable to hold an instance of the serial port library
+var portName = 'COM3'; //fill in with YOUR port
+var potent1 = 0;
+var potent2 = 0;
+
+function setup() {
+  createCanvas(400, 300);
+
+  serial = new p5.SerialPort(); //a new instance of serial port library
+
+  //set up events for serial communication
+  serial.on('connected', serverConnected);
+  serial.on('open', portOpen);
+  serial.on('data', serialEvent);
+  serial.on('error', serialError);
+  serial.on('close', portClose);
+
+  //open our serial port
+  serial.open(portName);
+
+  //let's figure out what port we're on - useful for determining your port
+  // serial.on('list', printList); //set a callback function for the serialport list event
+  // serial.list(); //list the serial ports
+}
+
+function draw() {
+  background('black');
+  
+  //I'm repurposing this from before, but the codes are separate in order to be separating out Arduino -> p5 and p5 -> Arduino into different codes.
+  potent1 = map(mouseX, 0, 400, 0, 25);
+  potent2 = map(mouseY, 0, 300, 0, 25);
+  
+  var width = sqrt(potent1)*potent2 + 2/3*potent2;
+  var height = potent1 + sqrt(potent1*potent2);
+  
+  var xpos = ((potent1^2)*((0.25)+potent2))*((potent1)*((0.25)-potent2));
+  var ypos = abs(potent1-potent2)*3*potent1*potent2;
+  
+  //console.log('width = ' + width);
+  //console.log('height = ' + height);
+  //console.log('xpos = ' + xpos);
+  //console.log('ypos = ' + ypos);
+  fill('white');
+  ellipse(width, height, xpos, ypos);
+}
+
+//this is my function for sending data
+//in general, it finds the percent of the canvas that is white vs the percent that is black, and sends it to the arduino to be a PWM output for an LED.
+function mouseDragged() {
+  loadPixels();
+  //the canvas is 400x300, making 120 000 total pixels in the canvas
+  //since p5 encodes for RGBA, there are 4 entries in the array for each pixel; total pixel array size = 480 000
+  //but we don't need to sum accross all the entries, we know that for white, R,G, and B are all 255, and for black they are all 0, so we only need to check the R value of each pixel
+  //furthermore to save computation time, we can just sum every tenth pixel on the canvas, since the final sum will be mapped down to 0-255 for PWM output anyways the difference made by summing every tenth pixel won't be a big deal
+  //so we only need 480 000/40 = 12 000 indexes to sum over
+  var sum = 0;
+  for (var i = 0; i < 12000; i++) {
+    var index = i*40; //here is where we make up for only having 30 000 indexes
+    if (pixels[index]) {
+      sum++;
+    }
+  }
+  sum = floor(map(sum, 0, 12000, 0, 255));
+  //console.log(sum);
+  serial.write(sum);
+}
+
+//all my callback functions are down here:
+//these are useful for giving feedback
+
+function serverConnected(){
+	console.log('connected to the server');
+}
+
+function portOpen(){
+  console.log('the serial port opened!');
+}
+
+//THIS IS WHERE WE RECEIVE DATA!!!!!!
+//make sure you're reading data based on how you're sending from arduino
+function serialEvent(){
+	//receive serial data here
+  //var input = serial.readLine();
+  //if (input.length) {
+  //  inputArray = split(input, ',');
+  //  potent1 = Number(inputArray[0]);
+  //  potent2 = Number(inputArray[1]);
+  //}
+  
+}
+
+function serialError(err){
+  console.log('something went wrong with the port. ' + err);
+}
+
+function portClose(){
+  console.log('the port was closed');
+}
+
+// get the list of ports:
+function printList(portList) {
+ // portList is an array of serial port names
+ for (var i = 0; i < portList.length; i++) {
+ // Display the list the console:
+ print(i + " " + portList[i]);
+ }
+}
